@@ -9,8 +9,7 @@ import UserEntity from "@domain/Entities/User/UserEntity";
 
 import IUserRepository from "@domain/Entities/User/IUserRepository";
 
-import AppError from "@infrastructure/Error/AppError";
-import HttpStatusCode from "@application/Utils/HttpStatusCode";
+import HttpResponse from "@application/Utils/HttpResponse";
 
 @injectable()
 class UserService {
@@ -23,13 +22,13 @@ class UserService {
             email: addUserDTO.email
         });
 
-        if (isUser) throw new AppError(HttpStatusCode.CONFLICT, "Already exists");
+        if (isUser) return HttpResponse.conflict();
 
         const userEntity = UserEntity.create(addUserDTO);
 
         await this.userRepository.addUser(userEntity);
 
-        return userEntity;
+        return HttpResponse.created(userEntity);
     }
 
     async getUsers(getUserDTO: GetUserDTO) {
@@ -39,9 +38,11 @@ class UserService {
             country: getUserDTO.country
         });
 
-        if (users.length === 0) throw new AppError(HttpStatusCode.NOT_FOUND, "Not found");
+        if (users.length === 0) return HttpResponse.notFound();
+
+        const userEntities = users.map(user => UserEntity.create(user));
         
-        return users.map(user => UserEntity.create(user));
+        return HttpResponse.ok(userEntities);
     }
 
     async updateUser(updateUserDTO: UpdateUserDTO) {
@@ -49,12 +50,12 @@ class UserService {
             userId: updateUserDTO.userId
         });
 
-        if (!isUser) throw new AppError(HttpStatusCode.NOT_FOUND, "Not found");
+        if (!isUser) return HttpResponse.notFound();
 
         const userEntity = UserEntity.create(updateUserDTO);
         await this.userRepository.updateUser(userEntity)
 
-        return userEntity;
+        return HttpResponse.noContent();
     }
 
     async removeUser(removeUserDTO: RemoveUserDTO) {
@@ -62,13 +63,13 @@ class UserService {
             userId: removeUserDTO.userId
         });
 
-        if (!isUser) throw new AppError(HttpStatusCode.NOT_FOUND, "Not found");
+        if (!isUser) return HttpResponse.notFound();
 
         await this.userRepository.removeUser({
             userId: removeUserDTO.userId
         });
 
-        return;
+        return HttpResponse.noContent();
     }
 }
 
