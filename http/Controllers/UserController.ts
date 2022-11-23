@@ -1,6 +1,5 @@
 import container from "@infrastructure/DIContainer/Container"
 
-import UserValidations from "@domain/Validations/UserValidation";
 import UserService from "@application/User/UserService";
 
 import AddUserDTO from "@application/User/DTOs/AddUserDTO";
@@ -13,29 +12,25 @@ const userService = container.resolve(UserService);
 class UserController {
     static async addUser(req) {
         const {body} = req;
-        UserValidations.addUserValidation(body);
-        const addUserDTO = new AddUserDTO(body);
+        const addUserDTO = AddUserDTO.create(body);
         return await userService.addUser(addUserDTO);
     }
 
     static async getUsers(req) {
         const {query} = req;
-        UserValidations.getUserValidation(query);
-        const getUserDTO = new GetUserDTO(query);
+        const getUserDTO = GetUserDTO.create(query);
         return await userService.getUsers(getUserDTO);
     }
 
     static async updateUser(req) {
         const {body} = req;
-        UserValidations.updateUserValidation(body);
-        const updateUserDTO = new UpdateUserDTO(body);
+        const updateUserDTO = UpdateUserDTO.create(body);
         return await userService.updateUser(updateUserDTO);
     }
 
     static async removeUser(req) {
         const {query} = req;
-        UserValidations.removeUserValidation(query);
-        const removeUserDTO = new RemoveUserDTO(query);
+        const removeUserDTO = RemoveUserDTO.create(query);
         return await userService.removeUser(removeUserDTO);
     }
 }
