@@ -9,8 +9,9 @@ import UserEntity from "@domain/Entities/User/UserEntity";
 
 import IUserRepository from "@domain/Entities/User/IUserRepository";
 
-import AppError from "@infrastructure/Error/AppError";
 import HttpStatusCode from "@application/Utils/HttpStatusCode";
+import HttpResp from "@application/Utils/HttpResp";
+import logger from "@infrastructure/Logger/logger";
 
 @injectable()
 class UserService {
@@ -19,56 +20,78 @@ class UserService {
     ) {}
 
     async addUser(addUserDTO: AddUserDTO) {
-        const isUser = await this.userRepository.getUserBySearch({
-            email: addUserDTO.email
-        });
-
-        if (isUser) throw new AppError(HttpStatusCode.CONFLICT, "Already exists");
-
-        const userEntity = UserEntity.create(addUserDTO);
-
-        await this.userRepository.addUser(userEntity);
-
-        return userEntity;
+        try {
+            const isUser = await this.userRepository.getUserBySearch({
+                email: addUserDTO.email
+            });
+    
+            if (isUser) return HttpResp.create(HttpStatusCode.CONFLICT, { status: "error", message: "Already exists"});
+    
+            const userEntity = UserEntity.create(addUserDTO);
+    
+            await this.userRepository.addUser(userEntity);
+    
+            return HttpResp.create(HttpStatusCode.OK, userEntity);
+        } catch (err) {
+            logger.error(err.message);
+            return HttpResp.create(HttpStatusCode.ERROR, { status: "error", message: err.message });
+        }
     }
 
     async getUsers(getUserDTO: GetUserDTO) {
-        const users = await this.userRepository.getUsersBySearch({
-            firstName: getUserDTO.firstName,
-            lastName: getUserDTO.lastName,
-            country: getUserDTO.country
-        });
+        try{
+            const users = await this.userRepository.getUsersBySearch({
+                firstName: getUserDTO.firstName,
+                lastName: getUserDTO.lastName,
+                country: getUserDTO.country
+            });
+    
+            if (users.length === 0) return HttpResp.create(HttpStatusCode.CONFLICT, { status: "error", message: "Not found"});
+            
+            const userEntities = users.map(user => UserEntity.create(user));
 
-        if (users.length === 0) throw new AppError(HttpStatusCode.NOT_FOUND, "Not found");
-        
-        return users.map(user => UserEntity.create(user));
+            return HttpResp.create(HttpStatusCode.OK, userEntities);
+        } catch (err) {
+            logger.error(err.message);
+            return HttpResp.create(HttpStatusCode.ERROR, { status: "error", message: err.message });
+        }
     }
 
     async updateUser(updateUserDTO: UpdateUserDTO) {
-        const isUser = await this.userRepository.getUserBySearch({
-            userId: updateUserDTO.userId
-        });
-
-        if (!isUser) throw new AppError(HttpStatusCode.NOT_FOUND, "Not found");
-
-        const userEntity = UserEntity.create(updateUserDTO);
-        await this.userRepository.updateUser(userEntity)
-
-        return userEntity;
+        try {
+            const isUser = await this.userRepository.getUserBySearch({
+                userId: updateUserDTO.userId
+            });
+    
+            if (!isUser) return HttpResp.create(HttpStatusCode.CONFLICT, { status: "error", message: "Not found"});
+    
+            const userEntity = UserEntity.create(updateUserDTO);
+            await this.userRepository.updateUser(userEntity)
+    
+            return HttpResp.create(HttpStatusCode.OK, userEntity)
+        } catch (err) {
+            logger.error(err.message);
+            return HttpResp.create(HttpStatusCode.ERROR, { status: "error", message: err.message });
+        }
     }
 
     async removeUser(removeUserDTO: RemoveUserDTO) {
-        const isUser = await this.userRepository.getUserBySearch({
-            userId: removeUserDTO.userId
-        });
-
-        if (!isUser) throw new AppError(HttpStatusCode.NOT_FOUND, "Not found");
-
-        await this.userRepository.removeUser({
-            userId: removeUserDTO.userId
-        });
-
-        return;
+        try {
+            const isUser = await this.userRepository.getUserBySearch({
+                userId: removeUserDTO.userId
+            });
+    
+            if (!isUser) return HttpResp.create(HttpStatusCode.CONFLICT, { status: "error", message: "Not found"});
+    
+            await this.userRepository.removeUser({
+                userId: removeUserDTO.userId
+            });
+    
+            return HttpResp.create(HttpStatusCode.OK, "");
+        } catch (err) {
+            logger.error(err.message);
+            return HttpResp.create(HttpStatusCode.ERROR, { status: "error", message: err.message });
+        }
     }
 }
 
