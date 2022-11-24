@@ -1,7 +1,7 @@
 import RESPONSE_MESSAGES from "@application/Utils/Constants";
 import HttpStatusCode from "@application/Utils/HttpStatusCode";
 
-class HttpResponse {
+class AppResult {
     readonly statusCode: number;
     readonly body: unknown;
 
@@ -11,28 +11,28 @@ class HttpResponse {
     }
 
     static ok(body) {
-        return new HttpResponse(HttpStatusCode.OK, body);
+        return new AppResult(HttpStatusCode.OK, body);
     }
 
     static created(body) {
-        return new HttpResponse(HttpStatusCode.CREATED, body);
+        return new AppResult(HttpStatusCode.CREATED, body);
     }
 
     static noContent() {
-        return new HttpResponse(HttpStatusCode.NO_CONTENT, null);
+        return new AppResult(HttpStatusCode.NO_CONTENT, null);
     }
 
     static error(body) {
-        return new HttpResponse(HttpStatusCode.ERROR, body);
+        return new AppResult(HttpStatusCode.ERROR, body);
     }
 
     static notFound(body = RESPONSE_MESSAGES.NOT_FOUND) {
-        return new HttpResponse(HttpStatusCode.NOT_FOUND, body);
+        return new AppResult(HttpStatusCode.NOT_FOUND, body);
     }
 
     static conflict(body = RESPONSE_MESSAGES.CONFLICT) {
-        return new HttpResponse(HttpStatusCode.CONFLICT, body);
+        return new AppResult(HttpStatusCode.CONFLICT, body);
     }
 }
 
-export default HttpResponse;
+export default AppResult;

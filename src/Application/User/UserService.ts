@@ -9,7 +9,7 @@ import UserEntity from "@domain/Entities/User/UserEntity";
 
 import IUserRepository from "@domain/Entities/User/IUserRepository";
 
-import HttpResponse from "@application/Utils/HttpResponse";
+import AppResult from "@application/Utils/AppResult";
 
 @injectable()
 class UserService {
@@ -22,13 +22,13 @@ class UserService {
             email: addUserDTO.email
         });
 
-        if (isUser) return HttpResponse.conflict();
+        if (isUser) return AppResult.conflict();
 
         const userEntity = UserEntity.create(addUserDTO);
 
         await this.userRepository.addUser(userEntity);
 
-        return HttpResponse.created(userEntity);
+        return AppResult.created(userEntity);
     }
 
     async getUsers(getUserDTO: GetUserDTO) {
@@ -38,11 +38,11 @@ class UserService {
             country: getUserDTO.country
         });
 
-        if (users.length === 0) return HttpResponse.notFound();
+        if (users.length === 0) return AppResult.notFound();
 
         const userEntities = users.map(user => UserEntity.create(user));
         
-        return HttpResponse.ok(userEntities);
+        return AppResult.ok(userEntities);
     }
 
     async updateUser(updateUserDTO: UpdateUserDTO) {
@@ -50,12 +50,12 @@ class UserService {
             userId: updateUserDTO.userId
         });
 
-        if (!isUser) return HttpResponse.notFound();
+        if (!isUser) return AppResult.notFound();
 
         const userEntity = UserEntity.create(updateUserDTO);
         await this.userRepository.updateUser(userEntity)
 
-        return HttpResponse.noContent();
+        return AppResult.noContent();
     }
 
     async removeUser(removeUserDTO: RemoveUserDTO) {
@@ -63,13 +63,13 @@ class UserService {
             userId: removeUserDTO.userId
         });
 
-        if (!isUser) return HttpResponse.notFound();
+        if (!isUser) return AppResult.notFound();
 
         await this.userRepository.removeUser({
             userId: removeUserDTO.userId
         });
 
-        return HttpResponse.noContent();
+        return AppResult.noContent();
     }
 }
 
